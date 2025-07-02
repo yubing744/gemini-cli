@@ -1,46 +1,88 @@
-# techContext.md
+# Technical Context
 
-**Purpose:**  
-Documents technologies used, development setup, technical constraints, dependencies, and tool usage patterns.
+## Technology Stack
+- **Language**: TypeScript with Node.js runtime
+- **Package Manager**: npm with workspace support
+- **Build System**: esbuild for fast compilation
+- **Testing**: Vitest for unit tests, custom integration test framework
+- **Linting**: ESLint with custom rules
+- **Formatting**: Prettier for code formatting
 
----
+## Architecture Overview
+### Monorepo Structure
+```
+gemini-cli/
+├── packages/
+│   ├── cli/          # CLI interface and UI components
+│   └── core/         # Core AI chat functionality
+├── docs/             # Documentation
+├── integration-tests/ # Integration test suites
+└── scripts/          # Build and deployment scripts
+```
 
-## Technologies Used
-- Node.js (v18+)
-- TypeScript (for source code)
-- JavaScript (for distributed packages)
-- Gemini API (Google)
-- Docker (for sandboxing)
-- NPM (for package management)
+### Core Packages
+1. **@gemini-cli/core**: Core functionality
+   - AI chat orchestration
+   - Authentication services
+   - Configuration management
+   - Tool integrations
+   - Telemetry services
+
+2. **@gemini-cli/cli**: CLI interface
+   - Terminal UI components
+   - Command parsing and routing
+   - User interaction handling
+   - Theme and display management
+
+## Key Technologies
+
+### Authentication Systems
+- **API Key Authentication**: Direct Google API key usage
+- **OAuth 2.0**: Google OAuth flow for user authentication
+- **DID Authentication**: Nuwa DID system with:
+  - `@nuwa-ai/identity-kit` for cryptographic operations
+  - CADOP integration for authorization
+  - Multibase encoding for key serialization
+
+### AI Integration
+- **Google Gemini API**: Primary AI model interface
+- **Content Generation**: Structured request/response handling
+- **Token Management**: Usage tracking and limits
+- **Model Selection**: Support for different Gemini model variants
+
+### Configuration Management
+- **Hierarchical Config**: Environment, user, and project-level settings
+- **Theme System**: Customizable color schemes and output formatting
+- **Settings Persistence**: JSON-based configuration storage
 
 ## Development Setup
-1. Install Node.js v18 or higher.
-2. Clone the repository and install dependencies with `npm install`.
-3. For development, use `npm run start` for hot-reloading.
-4. For production-like testing, use `npm link packages/cli` and run `gemini`.
-5. To run in a sandbox, use Docker and the published sandbox image.
-6. Configuration files are stored in `.gemini/settings.json` (project and home directory).
+### Prerequisites
+- Node.js 18+ 
+- npm 8+
+- TypeScript 5+
+
+### Build Process
+1. **Development**: `npm run dev` - Watch mode compilation
+2. **Production**: `npm run build` - Optimized bundle creation
+3. **Testing**: `npm test` - Unit and integration tests
+4. **Linting**: `npm run lint` - Code quality checks
+
+### Key Dependencies
+- `@google/generative-ai`: Gemini API client
+- `@nuwa-ai/identity-kit`: DID authentication
+- `ink`: React-based terminal UI framework
+- `commander`: CLI argument parsing
+- `conf`: Configuration management
 
 ## Technical Constraints
-- CLI-only interface (no GUI/web frontend).
-- Operations that modify the system or files are sandboxed for security.
-- Some features (e.g., token caching) depend on authentication method.
-- Only Gemini models are supported.
-- Large or binary files may be skipped or truncated by file tools.
+- **Node.js Runtime**: Must work across Node.js 18+ environments
+- **Cross-Platform**: Support Windows, macOS, Linux
+- **Security**: Secure credential storage and transmission
+- **Performance**: Fast startup and response times
+- **Offline Capability**: Graceful degradation without network
 
-## Dependencies
-- `@google/gemini-cli`: User-facing CLI package.
-- `@google/gemini-cli-core`: Backend logic and tool execution.
-- Docker: For sandboxed execution.
-- NPM: For package management and distribution.
-- esbuild, tsc: For building and bundling.
-
-## Tool Usage Patterns
-- Tools are registered and managed by the Core package.
-- Tool invocations are schema-driven and may require user confirmation.
-- Built-in tools: file system (read/write/list/search), shell, web fetch/search, memory.
-- MCP servers can be added for external integrations.
-- Tools are invoked automatically by the Gemini model based on user prompts.
-
-## Revision History
-- 2025-07-02: Initialized and updated with content from deployment, architecture, and tool documentation.
+## Integration Points
+- **File System**: Local file operations and workspace integration
+- **Network**: HTTP/HTTPS for API communication
+- **Process**: Shell command execution and sandbox environments
+- **Configuration**: OS-specific config directory handling

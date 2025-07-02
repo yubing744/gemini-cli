@@ -1,44 +1,38 @@
-# projectbrief.md
+# Gemini CLI - Project Brief
 
-**Purpose:**  
-Foundation document that shapes all other Memory Bank files.  
-Defines core requirements and goals.  
-Source of truth for project scope.
-
----
-
-## Project Overview
-Gemini CLI is a command-line AI workflow tool that connects to your tools, understands your code, and accelerates your workflows by leveraging Gemini models in an interactive REPL environment. It enables querying and editing large codebases, generating new apps from various inputs, automating operational tasks, and integrating with external tools and APIs.
+## Overview
+Gemini CLI is a command-line interface tool that provides AI-powered assistance through Google's Gemini API. The project is a TypeScript/Node.js monorepo with a modular architecture split into core functionality and CLI interface packages.
 
 ## Core Requirements
-- Provide a user-friendly CLI for interacting with Gemini models.
-- Support querying, editing, and summarizing large codebases.
-- Enable multimodal input (e.g., PDFs, sketches) for app generation.
-- Automate operational and development workflows.
-- Integrate with external tools and MCP servers for extensibility.
-- Ensure secure, sandboxed execution of sensitive operations.
+1. **AI Chat Interface**: Interactive CLI chat with Gemini AI models
+2. **Authentication**: Support for multiple auth methods including API keys and OAuth
+3. **Configuration Management**: Flexible config system for API settings, themes, and user preferences
+4. **Extensible Architecture**: Plugin-like system for tools and services
+5. **DID Integration**: Nuwa DID authentication system for decentralized identity
 
-## Goals
-- Deliver a seamless, interactive terminal experience for AI-assisted development.
-- Allow users to automate and accelerate common coding and operational tasks.
-- Support extensibility through tools and MCP servers.
-- Maintain user privacy and security through sandboxing and confirmation mechanisms.
+## Key Features
+- Interactive chat sessions with Gemini models
+- Multiple authentication methods (API key, OAuth, DID)
+- Configurable themes and UI customization
+- Token caching and management
+- Sandbox execution environment
+- Tool integration (file system, web search, memory, etc.)
+- Telemetry and analytics
+- Cross-platform support
 
-## Scope
-**In Scope:**
-- CLI and core backend for Gemini model interaction.
-- Built-in tools for file system, shell, web fetch/search, and memory.
-- Support for authentication, configuration, and theming.
-- Documentation and troubleshooting guides.
+## Project Structure
+- **packages/cli**: CLI interface and user interaction
+- **packages/core**: Core AI chat functionality and services
+- **docs**: Comprehensive documentation
+- **integration-tests**: Test suites
+- **scripts**: Build and deployment tools
 
-**Out of Scope:**
-- GUI or web-based frontends (CLI only).
-- Non-Gemini model integrations.
+## Target Users
+Developers, researchers, and power users who want AI assistance through a command-line interface with advanced authentication and customization options.
 
-## Stakeholders
-- End users: Developers and technical users seeking AI-powered workflow automation.
-- Contributors: Open-source community and maintainers.
-- Google Gemini team: Core maintainers and infrastructure providers.
-
-## Revision History
-- 2025-07-02: Initialized and updated with content from README.md and docs/.
+## Success Criteria
+- Seamless chat experience with Gemini AI
+- Reliable authentication flows
+- Easy configuration and customization
+- Stable cross-platform operation
+- Comprehensive documentation and testing

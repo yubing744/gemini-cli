@@ -1,31 +1,52 @@
-# productContext.md
+# Product Context
 
-**Purpose:**  
-Describes why this project exists, the problems it solves, how it should work, and user experience goals.
+## Why This Project Exists
+Gemini CLI bridges the gap between powerful AI capabilities and developer workflows by providing a command-line interface to Google's Gemini AI models. It enables developers to integrate AI assistance directly into their terminal-based workflows without switching contexts.
 
----
+## Problems It Solves
+1. **Context Switching**: Eliminates need to switch between terminal and web interfaces for AI assistance
+2. **Integration Friction**: Provides seamless AI integration in development environments
+3. **Authentication Complexity**: Handles multiple auth methods including cutting-edge DID authentication
+4. **Customization Limitations**: Offers extensive theming and configuration options
+5. **Tool Integration**: Connects AI with local development tools and workflows
 
-## Problem Statement
-Developers face challenges in understanding, navigating, and automating tasks across large codebases and complex workflows. Traditional CLI tools lack AI-powered assistance, multimodal input, and seamless integration with modern AI models and external tools.
+## How It Should Work
+### Core User Experience
+- **Simple Setup**: Quick installation and configuration process
+- **Natural Interaction**: Conversational interface that feels intuitive
+- **Persistent Sessions**: Maintain context across chat sessions
+- **Flexible Authentication**: Support API keys, OAuth, and DID methods
+- **Rich Customization**: Themes, configurations, and tool integrations
 
-## Rationale
-Gemini CLI is needed to bridge the gap between AI capabilities and developer workflows, enabling advanced code understanding, automation, and integration directly from the terminal. It empowers users to leverage Gemini models for productivity, code generation, and operational efficiency.
+### Key User Journeys
+1. **First-Time Setup**
+   - Install CLI tool
+   - Configure authentication (API key, OAuth, or DID)
+   - Customize preferences and themes
+   - Start first chat session
 
-## Solution Overview
-Gemini CLI provides an interactive REPL environment that connects to Gemini models, supports a wide range of built-in and extensible tools, and enables users to query, edit, and automate code and operational tasks. It supports multimodal input, secure execution, and integration with external APIs and MCP servers.
+2. **Daily Usage**
+   - Launch CLI from any directory
+   - Ask questions and get AI assistance
+   - Use integrated tools (file search, web lookup, etc.)
+   - Maintain conversation context
+
+3. **Advanced Features**
+   - Configure custom tools and integrations
+   - Use DID authentication for decentralized identity
+   - Customize themes and output formatting
+   - Manage multiple authentication profiles
 
 ## User Experience Goals
-- Fast, intuitive, and interactive terminal experience.
-- Clear feedback and confirmation for sensitive operations.
-- Seamless integration with developer workflows and tools.
-- Support for advanced AI features (multimodal, code understanding, automation).
+- **Immediate Value**: Users should get value within minutes of installation
+- **Intuitive Interface**: Commands and interactions should feel natural
+- **Reliable Performance**: Stable operation across different environments
+- **Extensible Design**: Easy to add new features and integrations
+- **Privacy Focused**: Secure handling of authentication and data
 
-## Usage Scenarios
-- Querying and summarizing large codebases.
-- Generating new applications from PDFs, sketches, or prompts.
-- Automating repetitive operational or development tasks.
-- Integrating with external APIs or tools via MCP servers.
-- Troubleshooting and debugging with AI assistance.
-
-## Revision History
-- 2025-07-02: Initialized and updated with content from README.md and docs/.
+## Success Metrics
+- Time to first successful interaction < 5 minutes
+- High user retention and daily usage
+- Positive feedback on ease of use and integration
+- Successful authentication flows across all methods
+- Stable operation across supported platforms

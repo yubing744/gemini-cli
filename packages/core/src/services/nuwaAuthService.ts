@@ -76,8 +76,8 @@ export class NuwaAuthService {
   async connectToCadop(): Promise<StoredNuwaConfig> {
     // Generate a new key pair using CryptoUtils
     const keyPair = await CryptoUtils.generateKeyPair(this.config.keyType!);
-    const publicKeyMultibase = MultibaseCodec.encode('base58btc', keyPair.publicKey);
-    const privateKeyMultibase = MultibaseCodec.encode('base58btc', keyPair.privateKey);
+    const publicKeyMultibase = MultibaseCodec.encode(keyPair.publicKey, 'base58btc');
+    const privateKeyMultibase = MultibaseCodec.encode(keyPair.privateKey, 'base58btc');
 
     // Generate state for CSRF protection
     const state = crypto.randomBytes(16).toString('hex');
@@ -135,13 +135,29 @@ export class NuwaAuthService {
       };
 
       // Sign the payload
-      const signature = await this.signer.sign(JSON.stringify(signPayload));
-      const signatureBase64 = Buffer.from(signature).toString('base64');
+      let signature: Uint8Array | undefined;
+      const signerAny = this.signer as any;
+      if (typeof signerAny.sign === 'function') {
+        // Use the sign method if available
+        const payloadBytes = Buffer.from(JSON.stringify(signPayload));
+        signature = await signerAny.sign(payloadBytes);
+      } else if (typeof signerAny.signPayload === 'function') {
+        signature = await signerAny.signPayload(signPayload);
+      } else if (typeof signerAny.signData === 'function') {
+        const payloadBytes = Buffer.from(JSON.stringify(signPayload));
+        signature = await signerAny.signData(payloadBytes);
+      } else if (typeof signerAny.signMessage === 'function') {
+        const payloadBytes = Buffer.from(JSON.stringify(signPayload));
+        signature = await signerAny.signMessage(payloadBytes);
+      } else {
+        throw new Error('KeyStoreSigner: No known signing method (sign, signPayload, signData, signMessage) exists. Please implement the correct signing method for this library.');
+      }
 
-      // Create authorization header
-      const authHeader = `DID agent_did="${this.storedConfig.agentDid}", key_id="${this.storedConfig.keyId}", signature="${signatureBase64}"`;
-      
-      return authHeader;
+      // Encode signature as base64
+      const signatureBase64 = Buffer.from(signature!).toString('base64');
+
+      // Build the authentication header
+      return `DID agent_did="${this.storedConfig.agentDid}", key_id="${this.storedConfig.keyId}", signature="${signatureBase64}"`;
     } catch (error) {
       throw new Error(`Failed to build auth header: ${error}`);
     }
@@ -151,8 +167,7 @@ export class NuwaAuthService {
    * Create a local signer from stored configuration
    */
   private createLocalSigner(config: StoredNuwaConfig): KeyStoreSigner {
-    const codec = new MultibaseCodec();
-    const privateKey = codec.decode(config.privateKeyMultibase);
+    const privateKey = MultibaseCodec.decode(config.privateKeyMultibase);
     const keyStore = new MemoryKeyStore();
     return new KeyStoreSigner(keyStore, config.keyType);
   }

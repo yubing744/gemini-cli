@@ -81,6 +81,8 @@ export class MCPServerConfig {
     readonly trust?: boolean,
     // Metadata
     readonly description?: string,
+    // Nuwa DID Auth
+    readonly nuwaAuth?: NuwaAuthConfig,
   ) {}
 }
 

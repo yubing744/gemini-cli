@@ -10,6 +10,8 @@ import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { parse } from 'shell-quote';
 import { MCPServerConfig } from '../config/config.js';
+import { NuwaAuthService } from '../services/nuwaAuthService.js';
+import { NuwaAuthConfig } from '../config/nuwaAuth.js';
 import { DiscoveredMCPTool } from './mcp-tool.js';
 import {
   CallableTool,
@@ -168,12 +170,47 @@ async function connectAndDiscover(
   updateMCPServerStatus(mcpServerName, MCPServerStatus.CONNECTING);
 
   let transport;
+  // Nuwa DID Auth integration
+  const nuwaDidAuthEnabled =
+    process.env.NUWA_DID_AUTH === 'true' ||
+    (mcpServerConfig.nuwaAuth && mcpServerConfig.nuwaAuth.enabled);
+
+  let nuwaAuthHeader: string | undefined;
+  if (nuwaDidAuthEnabled) {
+    try {
+      const nuwaAuthService = new NuwaAuthService(
+        mcpServerConfig.nuwaAuth as NuwaAuthConfig
+      );
+      await nuwaAuthService.initialize();
+      nuwaAuthHeader = await nuwaAuthService.buildAuthHeader({});
+    } catch (e) {
+      console.warn(
+        `[Nuwa DID Auth] Failed to initialize or build auth header: ${e}. Falling back to unauthenticated connection.`
+      );
+    }
+  }
+
   if (mcpServerConfig.httpUrl) {
+    // TODO: StreamableHTTPClientTransport does not support headers directly.
+    // To support Nuwa DID Auth, the SDK must allow header injection.
+    // For now, log a warning if auth is enabled.
+    if (nuwaAuthHeader) {
+      console.warn(
+        '[Nuwa DID Auth] Authorization header cannot be injected: StreamableHTTPClientTransport does not support headers option. SDK update required.'
+      );
+    }
     transport = new StreamableHTTPClientTransport(
-      new URL(mcpServerConfig.httpUrl),
+      new URL(mcpServerConfig.httpUrl)
     );
   } else if (mcpServerConfig.url) {
-    transport = new SSEClientTransport(new URL(mcpServerConfig.url));
+    if (nuwaAuthHeader) {
+      console.warn(
+        '[Nuwa DID Auth] Authorization header cannot be injected: SSEClientTransport does not support headers option. SDK update required.'
+      );
+    }
+    transport = new SSEClientTransport(
+      new URL(mcpServerConfig.url)
+    );
   } else if (mcpServerConfig.command) {
     transport = new StdioClientTransport({
       command: mcpServerConfig.command,

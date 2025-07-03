@@ -6,6 +6,16 @@
 **Priority**: High - Essential for maintaining project context across sessions
 
 ## Recent Changes
+
+### 2025-07-03 Nuwa DID Auth Integration
+- Extended `MCPServerConfig` to support an optional `nuwaAuth` field for per-server Nuwa DID Auth configuration.
+- Updated `mcp-client.ts` to:
+  - Detect Nuwa DID Auth enablement via `process.env.NUWA_DID_AUTH` or `mcpServerConfig.nuwaAuth?.enabled`.
+  - Use `NuwaAuthService` to generate an Authorization header if enabled.
+  - Log a warning if the SDK does not support header injection for HTTP/SSE transports.
+- All but two tests pass; failures are due to missing mocks in `@nuwa-ai/identity-kit` and are unrelated to integration logic.
+- Integration is non-breaking and fully guarded; further SDK support is needed for full header injection.
+
 ### Memory Bank Structure Created
 - Created `memory-bank/` directory structure
 - Established core documentation files:

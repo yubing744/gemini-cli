@@ -28,6 +28,27 @@ vi.mock('@nuwa-ai/identity-kit', () => ({
   multibaseDecode: vi.fn().mockImplementation((encoded) => 
     new Uint8Array(encoded.replace('encoded_', '').split('_').map(Number))
   ),
+  CryptoUtils: {
+    toBase64: vi.fn().mockImplementation((arr) => Buffer.from(arr).toString('base64')),
+    fromBase64: vi.fn().mockImplementation((str) => Uint8Array.from(Buffer.from(str, 'base64'))),
+    generateKeyPair: vi.fn().mockResolvedValue({
+      publicKey: new Uint8Array([5, 6, 7, 8]),
+      privateKey: new Uint8Array([9, 10, 11, 12]),
+    }),
+  },
+  MultibaseCodec: {
+    encode: vi.fn().mockImplementation((key) => `encoded_${key.join('_')}`),
+    decode: vi.fn().mockImplementation((encoded) =>
+      new Uint8Array(encoded.replace('encoded_', '').split('_').map(Number))
+    ),
+  },
+  MemoryKeyStore: vi.fn().mockImplementation(() => ({})),
+  KeyStoreSigner: vi.fn().mockImplementation(() => ({
+    sign: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+    signPayload: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+    signData: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+    signMessage: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+  })),
 }));
 
 describe('NuwaAuthService', () => {
@@ -107,11 +128,17 @@ describe('NuwaAuthService', () => {
         publicKeyMultibase: 'encoded_5_6_7_8',
       };
 
+      // Mock loadOrCreateConfig to resolve immediately
+      vi.spyOn(service as any, 'loadOrCreateConfig').mockResolvedValue(mockStoredConfig);
+
       // Initialize service with stored config
       await service.initialize();
       (service as any).storedConfig = mockStoredConfig;
       (service as any).signer = {
         sign: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+        signPayload: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+        signData: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
+        signMessage: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3, 4])),
       };
 
       const payload = { test: 'data' };

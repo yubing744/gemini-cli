@@ -24,6 +24,33 @@ import { ToolRegistry } from './tool-registry.js';
 export const MCP_DEFAULT_TIMEOUT_MSEC = 10 * 60 * 1000; // default to 10 minutes
 
 /**
+ * 检查是否应该绕过代理
+ */
+function shouldBypassProxy(url: string): boolean {
+  const parsedUrl = new URL(url);
+  const hostname = parsedUrl.hostname;
+  
+  // 对本地地址始终绕过代理
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+    return true;
+  }
+  
+  // 检查 NO_PROXY 环境变量
+  const noProxy = process.env.NO_PROXY || process.env.no_proxy;
+  if (noProxy) {
+    const noProxyList = noProxy.split(',').map(item => item.trim().toLowerCase());
+    return noProxyList.some(pattern => {
+      if (pattern === '*') return true;
+      if (pattern === hostname.toLowerCase()) return true;
+      if (pattern.startsWith('.') && hostname.toLowerCase().endsWith(pattern)) return true;
+      return false;
+    });
+  }
+  
+  return false;
+}
+
+/**
  * Enum representing the connection status of an MCP server
  */
 export enum MCPServerStatus {
@@ -208,9 +235,68 @@ async function connectAndDiscover(
         '[Nuwa DID Auth] Authorization header cannot be injected: SSEClientTransport does not support headers option. SDK update required.'
       );
     }
-    transport = new SSEClientTransport(
-      new URL(mcpServerConfig.url)
-    );
+    
+    const url = new URL(mcpServerConfig.url);
+    
+    // 检查是否应该绕过代理
+    const shouldBypass = shouldBypassProxy(mcpServerConfig.url);
+    
+    if (shouldBypass) {
+      console.debug("[DEBUG] [MCP-CLIENT], bypass url:", url)
+
+      // 创建一个不走代理的 fetch 实现
+      const noProxyFetch = async (url: string | URL, init?: RequestInit) => {
+        console.debug("[DEBUG] [MCP-CLIENT], noProxyFetch url:", url, "init:", init)
+        
+        // 临时清除代理环境变量
+        const originalProxyVars = {
+          HTTP_PROXY: process.env.HTTP_PROXY,
+          HTTPS_PROXY: process.env.HTTPS_PROXY,
+          http_proxy: process.env.http_proxy,
+          https_proxy: process.env.https_proxy,
+        };
+        
+        // 清除代理设置
+        process.env.HTTP_PROXY = '';
+        process.env.HTTPS_PROXY = '';
+        process.env.http_proxy = '';
+        process.env.https_proxy = '';
+        
+        try {
+          const resp = await globalThis.fetch(url, init);
+          console.debug("[DEBUG] [MCP-CLIENT], noProxyFetch resp:", resp)
+          return resp
+        } finally {
+          // 恢复原始代理设置
+          if (originalProxyVars.HTTP_PROXY !== undefined) {
+            process.env.HTTP_PROXY = originalProxyVars.HTTP_PROXY;
+          } else {
+            delete process.env.HTTP_PROXY;
+          }
+          if (originalProxyVars.HTTPS_PROXY !== undefined) {
+            process.env.HTTPS_PROXY = originalProxyVars.HTTPS_PROXY;
+          } else {
+            delete process.env.HTTPS_PROXY;
+          }
+          if (originalProxyVars.http_proxy !== undefined) {
+            process.env.http_proxy = originalProxyVars.http_proxy;
+          } else {
+            delete process.env.http_proxy;
+          }
+          if (originalProxyVars.https_proxy !== undefined) {
+            process.env.https_proxy = originalProxyVars.https_proxy;
+          } else {
+            delete process.env.https_proxy;
+          }
+        }
+      };
+      
+      transport = new SSEClientTransport(url, {
+        fetch: noProxyFetch
+      });
+    } else {
+      transport = new SSEClientTransport(url);
+    }
   } else if (mcpServerConfig.command) {
     transport = new StdioClientTransport({
       command: mcpServerConfig.command,
@@ -259,6 +345,7 @@ async function connectAndDiscover(
     const safeConfig = {
       command: mcpServerConfig.command,
       url: mcpServerConfig.url,
+      httpUrl: mcpServerConfig.httpUrl,
       cwd: mcpServerConfig.cwd,
       timeout: mcpServerConfig.timeout,
       trust: mcpServerConfig.trust,
